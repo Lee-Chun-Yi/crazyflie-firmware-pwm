@@ -44,6 +44,7 @@
 #include "commander.h"
 #include "crtp_commander_high_level.h"
 #include "crtp_localization_service.h"
+#include "crtp_pwm.h"
 #include "controller.h"
 #include "power_distribution.h"
 #include "collision_avoidance.h"
@@ -373,6 +374,7 @@ static void stabilizerTask(void* param)
       STATS_CNT_RATE_EVENT(&stabilizerRate);
     }
 
+    crtpPwmStep();
     xSemaphoreGive(xRateSupervisorSemaphore);
 
 #ifdef CONFIG_MOTORS_ESC_PROTOCOL_DSHOT

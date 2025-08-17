@@ -1,3 +1,7 @@
+config CRTP_PWM
+    bool "Enable CRTP PWM control"
+    default y
+
 menu "Controllers and Estimators"
 
 choice
