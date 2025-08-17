@@ -1,7 +1,5 @@
 # Crazyflie-Firmware-PWM
 
-We named this firmware as: **crazyflie-firmware-pwm**.
-
 This repository is a **customized Crazyflie firmware**, derived from the official [bitcraze/crazyflie-firmware](https://github.com/bitcraze/crazyflie-firmware).
 It provides **low-level PWM streaming and logging support**.
 
