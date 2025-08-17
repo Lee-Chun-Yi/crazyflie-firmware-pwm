@@ -6,11 +6,6 @@ import struct
 import sys
 import time
 
-from cflib.crazyflie import Crazyflie
-from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
-from cflib.crazyflie.crtp import CRTPPacket, CRTPPort
-from cflib.crtp import init_drivers
-
 TYPE_MOTOR = 8
 TYPE_ARM = 9
 
@@ -20,11 +15,26 @@ def clamp(value, low=0, high=0xFFFF):
     return max(low, min(high, int(value)))
 
 
+def send_packet_compat(cf, pkt):
+    """Send CRTP *pkt* using a link-compatible API."""
+    try:
+        cf.cf.link.send_packet(pkt)
+        return
+    except AttributeError:
+        pass
+    try:
+        cf._link.send_packet(pkt)
+        return
+    except AttributeError:
+        pass
+    raise RuntimeError("No compatible send_packet on Crazyflie link")
+
+
 def _send_generic(cf, payload):
     pk = CRTPPacket()
     pk.port = CRTPPort.COMMANDER_GENERIC
     pk.data = payload
-    cf.send_packet(pk)
+    send_packet_compat(cf, pk)
 
 
 def arm(cf, state):
@@ -67,31 +77,57 @@ def main():
     args = parser.parse_args()
     motors = [clamp(m) for m in args.m]
 
+    global Crazyflie, SyncCrazyflie, CRTPPacket, CRTPPort, init_drivers
+    try:
+        from cflib.crazyflie import Crazyflie
+        from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
+        from cflib.crazyflie.crtp import CRTPPacket, CRTPPort
+        from cflib.crtp import init_drivers
+    except ModuleNotFoundError:
+        if args.dry_run:
+            print(f"Would connect to {args.uri}")
+            print(f"Would ARM, send PWM {motors} for {args.hold} s, then DISARM.")
+            return 0
+        print("cflib not installed, please run 'pip install cflib'")
+        return 0
+
     if args.dry_run:
         print(f"Would connect to {args.uri}")
-        print(
-            "Would ARM, send PWM",
-            motors,
-            f"for {args.hold} s, then DISARM.",
-        )
-        return
+        print(f"Would ARM, send PWM {motors} for {args.hold} s, then DISARM.")
+        return 0
 
     init_drivers()
+    print("Connecting")
     try:
         with SyncCrazyflie(args.uri, cf=Crazyflie(rw_cache="./cache")) as scf:
             cf = scf.cf
             try:
                 arm(cf, 1)
-                print("Armed.")
+                time.sleep(0.1)
+                print("Armed")
+                print("Sending")
                 send_motor(cf, *motors)
+                print("Holding")
                 time.sleep(args.hold)
-            finally:
+                print("Stopping")
                 send_motor(cf, 0, 0, 0, 0)
                 arm(cf, 0)
-                print("Disarmed.")
+                print("Disarmed")
+                print("Done")
+            finally:
+                try:
+                    send_motor(cf, 0, 0, 0, 0)
+                    arm(cf, 0)
+                except Exception:
+                    pass
     except KeyboardInterrupt:
         print("Interrupted by user.", file=sys.stderr)
+        return 1
+    except Exception as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
