@@ -56,6 +56,7 @@
 #include "usblink.h"
 #include "mem.h"
 #include "crtp_mem.h"
+#include "crtp_pwm.h"
 #include "proximity.h"
 #include "watchdog.h"
 #include "queuemonitor.h"
@@ -187,6 +188,7 @@ void systemTask(void *arg)
   systemInit();
   commInit();
   commanderInit();
+  crtpPwmInit();
 
   StateEstimatorType estimator = StateEstimatorTypeAutoSelect;
 

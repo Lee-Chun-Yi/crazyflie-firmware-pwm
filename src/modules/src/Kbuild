@@ -13,6 +13,7 @@ obj-y += crtp_commander_rpyt.o
 obj-y += crtp_localization_service.o
 obj-y += crtp.o
 obj-y += crtpservice.o
+obj-$(CONFIG_CRTP_PWM) += crtp_pwm.o
 obj-y += esp_deck_flasher.o
 obj-y += eventtrigger.o
 obj-y += extrx.o
