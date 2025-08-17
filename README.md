@@ -5,9 +5,9 @@ It provides **low-level PWM streaming and logging support**.
 
 This firmware is intended for researchers and developers who need **real-time PWM control** of Crazyflie 2.1 or Bolt, including integration with **Vicon motion capture** and external control loops (e.g., MATLAB or Python).
 
----
 
-## Key Features
+
+## Key Functions
 
 * **Single-packet 4PWM transmission**
 
@@ -19,7 +19,6 @@ This firmware is intended for researchers and developers who need **real-time PW
   * Logs raw PWM values directly to the SD card
   * Enables offline analysis and motor calibration (per-motor compensation)
 
----
 
 ## Typical Workflow
 
@@ -36,7 +35,6 @@ This firmware is intended for researchers and developers who need **real-time PW
 4. Send **4PWM packets** from your external program (MATLAB, Python, etc.).
 5. (Optional) Retrieve **PWM log data** from SD card after flight.
 
----
 
 ## Project Structure
 
