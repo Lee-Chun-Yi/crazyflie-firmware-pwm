@@ -1,0 +1,52 @@
+name: Build Bolt firmware and 4PWM dry-run
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-bolt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make gcc-arm-none-eabi binutils-arm-none-eabi python3-pip
+      - name: Show toolchain
+        run: |
+          arm-none-eabi-gcc --version || true
+          make --version
+      - name: Build (Bolt)
+        run: |
+          make clean
+          make bolt_defconfig
+          make -j
+          test -f build/bolt/cf2.bin
+      - name: Upload artifact (Bolt firmware)
+        uses: actions/upload-artifact@v4
+        with:
+          name: bolt-firmware-bin
+          path: build/bolt/cf2.bin
+
+  dryrun-python:
+    runs-on: ubuntu-latest
+    needs: build-bolt
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run dry-run 4PWM test (no cflib required)
+        run: |
+          set -e
+          # The script must support --dry-run and succeed without cflib
+          if [ -f test_python/test_4pwm.py ]; then
+            python test_python/test_4pwm.py --dry-run
+          else
+            echo "test_python/test_4pwm.py not found" >&2
+            exit 1
+          fi
