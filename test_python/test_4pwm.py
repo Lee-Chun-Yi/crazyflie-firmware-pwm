@@ -2,7 +2,7 @@
 """Safely test 4×PWM transmission to Crazyflie/Bolt via dedicated PWM CRTP port (Route A).
 - Sends ONLY 4×uint16 (<HHHH) payload (8 bytes) on port 0x0A, channel 0.
 - No TYPE byte. Matches firmware expectation for the PWM port.
-- Optionally toggles a known enable/arm param if available (e.g., pwm.enable or motorPowerSet.enable).
+- Optionally toggles a known enable/arm param if available (e.g., crtp_pwm.enable, pwm.enable or motorPowerSet.enable).
 """
 
 import argparse
@@ -16,6 +16,7 @@ CHAN_PWM = 0      # Usually 0
 
 # Candidate params to enable/disable PWM control on the firmware
 ENABLE_PARAM_CANDIDATES = [
+    "crtp_pwm.enable",       # for CRTP PWM driver
     "pwm.enable",             # preferred if your firmware defines this
     "motorPowerSet.enable",   # common in CF mods
 ]
@@ -129,7 +130,7 @@ def main():
         if args.dry_run:
             print(f"[DRY] Would connect to {args.uri}")
             if not args.no_enable:
-                print("[DRY] Would try to set an enable param to 1 (pwm.enable or motorPowerSet.enable)")
+                print("[DRY] Would try to set an enable param to 1 (crtp_pwm.enable, pwm.enable or motorPowerSet.enable)")
             print(f"[DRY] Would send 4×PWM {m} at {rate:.1f} Hz for {args.hold:.2f} s")
             print("[DRY] Would then send zeros once")
             if args.disable_after and not args.no_enable:
@@ -141,7 +142,7 @@ def main():
     if args.dry_run:
         print(f"[DRY] Would connect to {args.uri}")
         if not args.no_enable:
-            print("[DRY] Would try to set an enable param to 1 (pwm.enable or motorPowerSet.enable)")
+            print("[DRY] Would try to set an enable param to 1 (crtp_pwm.enable, pwm.enable or motorPowerSet.enable)")
         print(f"[DRY] Would send 4×PWM {m} at {rate:.1f} Hz for {args.hold:.2f} s")
         print("[DRY] Would then send zeros once")
         if args.disable_after and not args.no_enable:
