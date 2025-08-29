@@ -10,6 +10,11 @@ import struct
 import sys
 import time
 
+# ==== Top-level imports (always) ====
+from cflib.crazyflie import Crazyflie
+from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
+import cflib.crtp as crtp
+from cflib.crtp.crtpstack import CRTPPacket  # <- CRTPPacket 正確位置
 
 PORT_PWM = 0x0A   # Dedicated 4PWM port in firmware
 CHAN_PWM = 0      # Usually 0
@@ -17,8 +22,8 @@ CHAN_PWM = 0      # Usually 0
 # Candidate params to enable/disable PWM control on the firmware
 ENABLE_PARAM_CANDIDATES = [
     "crtp_pwm.enable",       # for CRTP PWM driver
-    "pwm.enable",             # preferred if your firmware defines this
-    "motorPowerSet.enable",   # common in CF mods
+    "pwm.enable",            # preferred if your firmware defines this
+    "motorPowerSet.enable",  # common in CF mods
 ]
 
 
@@ -29,15 +34,21 @@ def clamp(value, low=0, high=0xFFFF):
 
 def send_packet_compat(cf, pkt):
     """Send CRTP *pkt* using a link-compatible API across cflib versions."""
-    # Try modern path
+    # Newer path (most common): cf.link.send_packet(...)
+    try:
+        cf.link.send_packet(pkt)
+        return
+    except AttributeError:
+        pass
+    # Some wrappers keep the Crazyflie at cf.cf
     try:
         cf.cf.link.send_packet(pkt)
         return
     except AttributeError:
         pass
-    # Try legacy/private path
+    # Legacy/private path
     try:
-        cf._link.send_packet(pkt)  # noqa: SLF001 (private attribute access for compatibility)
+        cf._link.send_packet(pkt)  # noqa: SLF001
         return
     except AttributeError:
         pass
@@ -46,8 +57,6 @@ def send_packet_compat(cf, pkt):
 
 def send_4pwm_packet(cf, m1, m2, m3, m4):
     """Send exactly 8-byte payload: 4×uint16 (little-endian) to the PWM port."""
-    from cflib.crtp import CRTPPacket  # local import to keep --dry-run fast
-
     payload = struct.pack("<HHHH", m1, m2, m3, m4)
     pk = CRTPPacket()
     pk.port = PORT_PWM
@@ -64,6 +73,8 @@ def try_set_enable(cf, state: int) -> str:
     for pname in ENABLE_PARAM_CANDIDATES:
         try:
             cf.param.set_value(pname, str(int(bool(state))))
+            time.sleep(0.05)  # let it propagate
+            print(f"[ENABLE] Tried set {pname}={int(bool(state))}")
             return pname
         except Exception:
             continue
@@ -76,14 +87,14 @@ def main():
     )
     parser.add_argument(
         "--uri",
-        default="radio://0/80/2M/E7E7E7E7E7",
+        default="radio://0/90/2M/E7E7E7E7E7",
         help="Connection URI (default: %(default)s)",
     )
     parser.add_argument(
         "--m",
         nargs=4,
         type=int,
-        default=[500, 500, 500, 500],
+        default=[5000, 5000, 5000, 5000],
         metavar=("M1", "M2", "M3", "M4"),
         help="Four motor PWM values in [0..65535] (default: %(default)s)",
     )
@@ -109,47 +120,14 @@ def main():
         action="store_true",
         help="After stopping (sending zeros), try to disable/arm-off param.",
     )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Print actions without connecting.",
-    )
-
     args = parser.parse_args()
+
     m = [clamp(v) for v in args.m]
     rate = max(1.0, float(args.rate))
     interval = 1.0 / rate
 
-    # Lazy import to allow --dry-run without cflib installed
-    global Crazyflie, SyncCrazyflie, init_drivers
-    try:
-        from cflib.crazyflie import Crazyflie
-        from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
-        from cflib.crtp import init_drivers
-    except ModuleNotFoundError:
-        if args.dry_run:
-            print(f"[DRY] Would connect to {args.uri}")
-            if not args.no_enable:
-                print("[DRY] Would try to set an enable param to 1 (crtp_pwm.enable, pwm.enable or motorPowerSet.enable)")
-            print(f"[DRY] Would send 4×PWM {m} at {rate:.1f} Hz for {args.hold:.2f} s")
-            print("[DRY] Would then send zeros once")
-            if args.disable_after and not args.no_enable:
-                print("[DRY] Would try to set the enable param back to 0")
-            return 0
-        print("cflib not installed. Run: pip install cflib")
-        return 1
-
-    if args.dry_run:
-        print(f"[DRY] Would connect to {args.uri}")
-        if not args.no_enable:
-            print("[DRY] Would try to set an enable param to 1 (crtp_pwm.enable, pwm.enable or motorPowerSet.enable)")
-        print(f"[DRY] Would send 4×PWM {m} at {rate:.1f} Hz for {args.hold:.2f} s")
-        print("[DRY] Would then send zeros once")
-        if args.disable_after and not args.no_enable:
-            print("[DRY] Would try to set the enable param back to 0")
-        return 0
-
-    init_drivers()
+    # Initialize CRTP drivers
+    crtp.init_drivers()
     print(f"Connecting to {args.uri} ...")
     try:
         with SyncCrazyflie(args.uri, cf=Crazyflie(rw_cache="./cache")) as scf:
@@ -158,18 +136,14 @@ def main():
             used_param = ""
             if not args.no_enable:
                 used_param = try_set_enable(cf, 1)
-                if used_param:
-                    print(f"[ENABLE] Set {used_param}=1")
-                else:
+                if not used_param:
                     print("[WARN] Could not set any known enable param. "
                           "Make sure the firmware-side PWM enable is ON.")
 
-            # Short grace time for params to take effect
-            time.sleep(0.1)
+            time.sleep(0.1)  # grace time
 
             print(f"Sending 4×PWM {m} at {rate:.1f} Hz for {args.hold:.2f} s ...")
             t_end = time.monotonic() + max(0.0, float(args.hold))
-            # Stream at fixed rate to satisfy firmware timeout logic
             while time.monotonic() < t_end:
                 send_4pwm_packet(cf, *m)
                 time.sleep(interval)
