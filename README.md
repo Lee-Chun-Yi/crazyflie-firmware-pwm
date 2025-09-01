@@ -14,38 +14,24 @@ This firmware is intended for researchers and developers who need **real-time PW
   * Adds a new CRTP command to send **four PWM values** (one packet per update)
   * Eliminates per-motor packet overhead and improves timing consistency
 
-* **PWM logging via micro-SD (Bolt)**
-
-  * Logs raw PWM values directly to the SD card
-  * Enables offline analysis and motor calibration (per-motor compensation)
 
 
-## Typical Workflow
 
-1. Clone and build the firmware:
+## Major Changes
 
-   ```bash
-   git clone https://github.com/<yourname>/crazyflie-firmware-pwm.git
-   cd crazyflie-firmware-pwm
-   make clean
-   make PLATFORM=bolt
-   ```
-2. Flash the firmware using **cfclient** or `cfloader`.
-3. Connect to Crazyflie/Bolt as usual.
-4. Send **4PWM packets** from your external program (MATLAB, Python, etc.).
-5. (Optional) Retrieve **PWM log data** from SD card after flight.
+* Add: 
 
+  * src/modules/src/crtp_pwm.c
+  * src/modules/interface/crtp_pwm.h
 
-## Project Structure
+* Revised: 
 
-* `src/modules/pwm`
-
-  * New CRTP port & packet handling for 4PWM
-
-* `src/logs/pwm_logger`
-
-  * SD-card logging routines
-
+  * src/modules/src/stabilizer.c
+  * src/modules/src/Kconfig
+    
+* Test code
+  * /test_python/test_4pwm.py
+    
 ---
 
 ## Project Timeline – Crazyflie Firmware PWM
