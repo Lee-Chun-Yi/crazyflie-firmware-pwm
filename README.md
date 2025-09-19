@@ -113,7 +113,7 @@ git clone --recursive https://github.com/Lee-Chun-Yi/crazyflie-firmware-pwm.git
 
 > Use this git clone if you want to clone same repo second time.
 ```bash
-git clone --recursive https://github.com/Lee-Chun-Yi/crazyflie-firmware-pwm.git
+> git clone --recursive https://github.com/Lee-Chun-Yi/crazyflie-firmware-pwm.git
 ```
 
 ⚠️  replace with your repo name
