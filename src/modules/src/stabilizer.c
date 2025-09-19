@@ -254,7 +254,29 @@ static void logCapWarning(const bool isCapped) {
 }
 
 static void controlMotors(const control_t* control) {
-  powerDistribution(control, &motorThrustUncapped);
+  if (!crtpPwmInjectionIsEnabled()) {
+    powerDistribution(control, &motorThrustUncapped);
+  } else {
+    motors_thrust_uncapped_t injectedThrust;
+    TickType_t lastPacketTick = 0;
+    const bool hasPacket = crtpPwmGetMotorThrust(&injectedThrust, &lastPacketTick);
+    const TickType_t now = xTaskGetTickCount();
+    const TickType_t timeoutTicks = M2T(CRTP_PWM_FAILSAFE_TIMEOUT_MS);
+    bool streamFresh = false;
+
+    if (hasPacket) {
+      streamFresh = (now - lastPacketTick) <= timeoutTicks;
+    }
+
+    if (streamFresh) {
+      motorThrustUncapped = injectedThrust;
+    } else {
+      for (int motor = 0; motor < STABILIZER_NR_OF_MOTORS; motor++) {
+        motorThrustUncapped.list[motor] = 0;
+      }
+    }
+  }
+
   batteryCompensation(&motorThrustUncapped, &motorThrustBatCompUncapped);
   const bool isCapped = powerDistributionCap(&motorThrustBatCompUncapped, &motorPwm);
   logCapWarning(isCapped);
