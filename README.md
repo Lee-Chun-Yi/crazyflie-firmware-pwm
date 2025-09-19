@@ -110,15 +110,17 @@ If successful, you will enter the **Bitcraze Toolbelt** container.
 cd ~
 ```
 
-```bash
-git clone --recursive https://github.com/Lee-Chun-Yi/crazyflie-firmware-pwm.git   
-```
-
-(Optional) Only use this before git clone if you want to clone same repo second time.
+(Optional) Only use this if you want to clone same repo second time, otherwise, don't use it.
 
 ```bash
 rm -rf ~/crazyflie-firmware-pwm
 ```
+
+```bash
+git clone --recursive https://github.com/Lee-Chun-Yi/crazyflie-firmware-pwm.git   
+```
+
+
 
 2.2 Go into the repoo.
 ⚠️  replace with your repo name
