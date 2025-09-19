@@ -114,9 +114,11 @@ cd ~
 git clone --recursive https://github.com/Lee-Chun-Yi/crazyflie-firmware-pwm.git   
 ```
 
-> Use this git clone instead, if you want to clone same repo second time.
-> 
-> git clone --recursive https://github.com/Lee-Chun-Yi/crazyflie-firmware-pwm.git
+(Optional) Only use this before git clone if you want to clone same repo second time.
+
+```bash
+rm -rf ~/crazyflie-firmware-pwm
+```
 
 2.2 Go into the repoo.
 ⚠️  replace with your repo name
