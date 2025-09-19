@@ -102,7 +102,7 @@ If successful, you will enter the **Bitcraze Toolbelt** container.
 
 ## 2. Clone Custom Firmware Repository
 
-2.1 Inside the Toolbelt container:
+### 2.1 Inside the Toolbelt container:
 
 ⚠️ replace with your GitHub link
 
@@ -122,7 +122,7 @@ git clone --recursive https://github.com/Lee-Chun-Yi/crazyflie-firmware-pwm.git
 
 
 
-2.2 Go into the repoo.
+### 2.2 Go into the repoo.
 ⚠️  replace with your repo name
 
 ```bash
