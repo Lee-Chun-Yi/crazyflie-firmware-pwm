@@ -104,8 +104,6 @@ If successful, you will enter the **Bitcraze Toolbelt** container.
 
 ### 2.1 Inside the Toolbelt container:
 
-⚠️ replace with your GitHub link
-
 ```bash
 cd ~
 ```
@@ -116,13 +114,14 @@ cd ~
 rm -rf ~/crazyflie-firmware-pwm
 ```
 
+### 2.1 Clone (Replace with your GitHub link)
+
 ```bash
 git clone --recursive https://github.com/Lee-Chun-Yi/crazyflie-firmware-pwm.git   
 ```
 
+### 2.3 Go into the repo.
 
-
-### 2.2 Go into the repoo.
 ⚠️  replace with your repo name
 
 ```bash
