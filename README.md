@@ -204,10 +204,12 @@ tb make -j"$(nproc)"
 
 ### 4.1 Put on Crazyradio PA
 
+#### 1.
+
 ```bash
  cd "your file"
 ```
-
+#### 2.
 ```bash
 py -m cfloader flash build\bolt.bin stm32-fw
 ```
