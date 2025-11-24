@@ -217,4 +217,7 @@ or
 ```bash
 py -m cfloader flash build\cf2.bin stm32-fw
 ```
-⚠️ Bootloader mode: 1. Plug your battery but power off 2. Long press power button until it flash quickly 3. You are in bootloader mode if red light isn't on
+⚠️ Bootloader mode: 
+1. Plug your battery but power off
+2. Long press power button until it flash quickly
+3. You are in bootloader mode if red light isn't on
