@@ -204,12 +204,12 @@ tb make -j"$(nproc)"
 
 ### 4.1 Put on Crazyradio PA
 
-#### 1.
+#### 1. Open powershell, cd to your file
 
 ```bash
  cd "your file"
 ```
-#### 2.
+#### 2. Use cfloader to flash your .bin file (make sure your cf2/bolt is in bootloader mode)
 ```bash
 py -m cfloader flash build\bolt.bin stm32-fw
 ```
@@ -217,3 +217,4 @@ or
 ```bash
 py -m cfloader flash build\cf2.bin stm32-fw
 ```
+⚠️ Bootloader mode: 1. Plug your battery but power off 2. Long press power button until it flash quickly 3. You are in bootloader mode if red light isn't on
