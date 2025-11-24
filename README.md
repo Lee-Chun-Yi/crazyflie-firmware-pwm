@@ -204,8 +204,14 @@ tb make -j"$(nproc)"
 
 ### 4.1 Put on Crazyradio PA
 
-⚠️ Substitute **`C:\Users\USER\Desktop\cf2.bin`** with your bin.file location, and make sure to verify the radio channel.
+```bash
+ cd "your file"
+```
 
 ```bash
-python -m cfloader flash "C:\Users\USER\Desktop\cf2.bin" stm32-fw -w radio://0/80/2M/E7E7E7E7E7
+py -m cfloader flash build\bolt.bin stm32-fw
+```
+or
+```bash
+py -m cfloader flash build\cf2.bin stm32-fw
 ```
